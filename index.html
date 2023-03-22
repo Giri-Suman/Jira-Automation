@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jira Ticket Fetcher</title>
+</head>
+<body>
+    <script>
+        // Replace these with your own Jira domain, username, and API token
+        const jiraDomain = 'https://your-jira-domain.atlassian.net';
+        const username = 'your-email@example.com';
+        const apiToken = 'your-api-token';
+
+        // JQL query to fetch the tickets
+        const jqlQuery = `assignee=${username} OR watcher=${username} OR text ~ "${username}"`;
+
+        // REST API endpoint
+        const url = `${jiraDomain}/rest/api/3/search`;
+
+        // Request parameters
+        const params = new URLSearchParams({
+            jql: jqlQuery,
+            fields: 'summary,assignee,reporter,updated,created,issuetype,priority,status'
+        });
+
+        // Fetch ticket details from Jira REST API
+        fetch(`${url}?${params}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Basic ' + btoa(username + ':' + apiToken),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Extract and log ticket details
+            data.issues.forEach(issue => {
+                console.log(`Ticket ID: ${issue.key}`);
+                console.log(`Summary: ${issue.fields.summary}`);
+                console.log(`Assignee: ${issue.fields.assignee.displayName}`);
+                console.log(`Reporter: ${issue.fields.reporter.displayName}`);
+                console.log(`Updated: ${issue.fields.updated}`);
+                console.log(`Created: ${issue.fields.created}`);
+                console.log(`Issue Type: ${issue.fields.issuetype.name}`);
+                console.log(`Priority: ${issue.fields.priority.name}`);
+                console.log(`Status: ${issue.fields.status.name}`);
+                console.log('\n');
+            });
+        })
+        .catch(error => console.error('Error:', error));
+    </script>
+</body>
+</html>
